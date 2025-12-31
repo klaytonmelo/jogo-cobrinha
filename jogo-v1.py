@@ -23,9 +23,9 @@ velocidade = 5
 x_controle = velocidade
 y_controle = 0
 
-
 x_maca = randint(40, 600)
 y_maca = randint(50, 430)
+
 #fonte e estilo
 pontos = 0
 font = pygame.font.SysFont("gabriola",38, True, True)
