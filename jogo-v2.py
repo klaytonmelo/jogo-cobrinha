@@ -41,10 +41,12 @@ font = pygame.font.SysFont("gabriola", 38, True, True)
 
 morreu = False
 
-# Funções
+# Funções 
+
+#corpo dacobra
 def aumenta_cobra(lista_cobra):
     for XeY in lista_cobra[:-1]:
-        pygame.draw.circle(tela, (0, 200, 100), (XeY[0], XeY[1]), 17)
+        pygame.draw.circle(tela, (0, 200, 100), (XeY[0], XeY[1]), 12)
 
 def reiniciar_jogo():
     global pontos, comprimento_inicial, x_cobra, y_cobra, lista_cobra, x_maca, y_maca, morreu
@@ -56,13 +58,6 @@ def reiniciar_jogo():
     x_maca = randint(40, 960)
     y_maca = randint(40, 660)
     morreu = False
-
-'''def colidiu_com_corpo(x, y, corpo):
-    for parte in corpo[:-1]:  # ignora a cabeça
-        distancia = math.sqrt((x - parte[0])**2 + (y - parte[1])**2)
-        if distancia < 18 + 17:  # raio cabeça + raio corpo
-            return True
-    return False'''
 
 # Loop principal
 while True:
@@ -99,8 +94,8 @@ while True:
     # Desenha o corpo primeiro
     aumenta_cobra(lista_cobra)
     #cobra = pygame.draw.rect(tela, (0, 255, 0), (x_cobra, y_cobra, 40,40))
-    cobra = pygame.draw.circle(tela,(50, 100, 144),(x_cobra, y_cobra),18)
-    maca = pygame.draw.circle(tela, (255, 0, 0), (x_maca, y_maca), 20)
+    cobra = pygame.draw.circle(tela,(50, 100, 144),(x_cobra, y_cobra),13)
+    maca = pygame.draw.circle(tela, (255, 0, 0), (x_maca, y_maca), 10)
 
     # Colisão com maçã
     if cobra.colliderect(maca):
@@ -114,16 +109,19 @@ while True:
     lista_cabeca = [x_cobra, y_cobra]
     lista_cobra.append(lista_cabeca)
 
+    #quando a cobra morre
     if lista_cobra.count(lista_cabeca) > 1:
         font2 = pygame.font.SysFont('arial', 24, True, True)
         mensagem = "GAME OVER - Pressione R para jogar novamente"
         texto = font2.render(mensagem, True, (255, 255, 255))
         rect = texto.get_rect(center=(largura // 2, altura // 2))
+        
 
         morreu = True
         while morreu:
             tela.fill((200, 50, 50))
             tela.blit(texto, rect)
+            pygame.mixer.music.play(0)
 
             for event in pygame.event.get():
                 if event.type == QUIT:
@@ -138,13 +136,13 @@ while True:
         del lista_cobra[0]
 
     # Teleporte nas bordas
-    if x_cobra > largura:
+    if x_cobra >= largura:
         x_cobra = 0
-    elif x_cobra < 0:
+    elif x_cobra <= 0:
         x_cobra = largura
-    elif y_cobra > altura:
-        y_cobra = 0
-    elif y_cobra < 0:
+    elif y_cobra >= altura:
+        y_cobra = 10
+    elif y_cobra < 10:
         y_cobra = altura
 
     pygame.display.update()
