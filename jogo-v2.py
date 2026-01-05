@@ -4,6 +4,15 @@ from sys import exit
 from random import randint
 import math
 
+MENU = "menu"
+JOGANDO = "jogando"
+LEVEL_UP = "level_up"
+
+PONTOS_PARA_PROX_NIVEL = 5
+
+estado = JOGANDO
+nivel = 1
+
 pygame.init()
 
 # Música
@@ -59,55 +68,103 @@ def reiniciar_jogo():
     y_maca = randint(40, 660)
     morreu = False
 
+#tela pra proximo level   
+def tela_level_up(nivel):
+    tela.fill((0, 0, 0))
+    fonte = pygame.font.SysFont('arial', 48, True)
+    fonte2 = pygame.font.SysFont('arial', 28, True)
+
+    texto = fonte.render(f"NÍVEL {nivel} CONCLUÍDO!", True, (255, 255, 0))
+    instrucao = fonte2.render("Pressione ENTER para o próximo nível", True, (255, 255, 255))
+
+    tela.blit(texto, (largura//2 - texto.get_width()//2, 250))
+    tela.blit(instrucao, (largura//2 - instrucao.get_width()//2, 320))
+
+def iniciar_nivel(nivel):
+    global x_cobra, y_cobra, lista_cobra, comprimento_inicial
+    global x_controle, y_controle, velocidade
+
+    x_cobra = largura // 2
+    y_cobra = altura // 2
+    lista_cobra = []
+    comprimento_inicial = 5
+
+    x_controle = velocidade
+    y_controle = 0
+
+    if nivel == 1:
+        velocidade = 5
+    elif nivel == 2:
+        velocidade = 8
+    elif nivel == 3:
+        velocidade = 11
+
 # Loop principal
 while True:
     relogio.tick(40)
     tela.fill((0, 0, 0))
-
-    texto_pontos = font.render(f"Pontos: {pontos}", True, (255, 255, 255))
-    tela.blit(texto_pontos, (420, 40))
+    if estado == JOGANDO:
+        texto_pontos = font.render(f"Pontos: {pontos}", True, (255, 255, 255))
+        tela.blit(texto_pontos, (420, 40))
 
     for event in pygame.event.get():
         if event.type == QUIT:
             pygame.quit()
             exit()
 
-        if event.type == KEYDOWN:
-            if event.key == K_a and x_controle != velocidade:
-                x_controle = -velocidade
-                y_controle = 0
-            elif event.key == K_d and x_controle != -velocidade:
-                x_controle = velocidade
-                y_controle = 0
-            elif event.key == K_w and y_controle != velocidade:
-                y_controle = -velocidade
-                x_controle = 0
-            elif event.key == K_s and y_controle != -velocidade:
-                y_controle = velocidade
-                x_controle = 0
+        if estado == JOGANDO:
+            if event.type == KEYDOWN:
+                if event.key == K_a and x_controle != velocidade:
+                    x_controle = -velocidade
+                    y_controle = 0
+                elif event.key == K_d and x_controle != -velocidade:
+                    x_controle = velocidade
+                    y_controle = 0
+                elif event.key == K_w and y_controle != velocidade:
+                    y_controle = -velocidade
+                    x_controle = 0
+                elif event.key == K_s and y_controle != -velocidade:
+                    y_controle = velocidade
+                    x_controle = 0
+        #Tela de level up
+        elif estado == LEVEL_UP:
+
+            if event.type == KEYDOWN and event.key == K_RETURN:
+                nivel += 1
+                pontos = 0
+                iniciar_nivel(nivel)
+                estado = JOGANDO
 
     # Movimento
-    x_cobra += x_controle
-    y_cobra += y_controle
+    if estado == JOGANDO:
+        x_cobra += x_controle
+        y_cobra += y_controle
+
+    
 
     # Desenhos
     # Desenha o corpo primeiro
-    aumenta_cobra(lista_cobra)
-    #cobra = pygame.draw.rect(tela, (0, 255, 0), (x_cobra, y_cobra, 40,40))
-    cobra = pygame.draw.circle(tela,(50, 100, 144),(x_cobra, y_cobra),13)
-    maca = pygame.draw.circle(tela, (255, 0, 0), (x_maca, y_maca), 10)
+    if estado == JOGANDO:
+        aumenta_cobra(lista_cobra)
+        #cobra = pygame.draw.rect(tela, (0, 255, 0), (x_cobra, y_cobra, 40,40))
+        cobra = pygame.draw.circle(tela,(50, 100, 144),(x_cobra, y_cobra),13)
+        maca = pygame.draw.circle(tela, (255, 0, 0), (x_maca, y_maca), 10)
 
-    # Colisão com maçã
-    if cobra.colliderect(maca):
-        x_maca = randint(40, 960)
-        y_maca = randint(40, 660)
-        pontos += 1
-        colisao.play()
-        comprimento_inicial += 5
+        # Colisão com maçã
+        if cobra.colliderect(maca):
+            x_maca = randint(40, 960)
+            y_maca = randint(40, 660)
+            pontos += 1
+            if pontos == PONTOS_PARA_PROX_NIVEL:
+                estado = LEVEL_UP
+
+            colisao.play()
+            comprimento_inicial += 5
 
     # Corpo da cobra
-    lista_cabeca = [x_cobra, y_cobra]
-    lista_cobra.append(lista_cabeca)
+    if estado == JOGANDO:
+        lista_cabeca = [x_cobra, y_cobra]
+        lista_cobra.append(lista_cabeca)
 
     #quando a cobra morre
     if lista_cobra.count(lista_cabeca) > 1:
@@ -144,5 +201,8 @@ while True:
         y_cobra = 10
     elif y_cobra < 10:
         y_cobra = altura
+
+    if estado == LEVEL_UP:
+        tela_level_up(nivel)
 
     pygame.display.update()
