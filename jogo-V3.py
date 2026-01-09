@@ -8,14 +8,15 @@ NIVEIS = {
     1: {
         "velocidade": 5,
         "objetivo": "pontos",
-        "valor_objetivo": 5,
+        "valor_objetivo": 2,
+        "valor_objetivo2": 0,
         "obstaculos": [],
         "tempo_limite": None
     },
     2: {
         "velocidade": 7,
         "objetivo": "pontos",
-        "valor_objetivo": 10,
+        "valor_objetivo": 3,
         "obstaculos": [
             pygame.Rect(300, 200, 40, 40)
         ],
@@ -24,6 +25,18 @@ NIVEIS = {
     3: {
         "velocidade": 5,
         "objetivo": "tempo",
+        "valor_objetivo": 10,  # sobreviver 20s
+        "obstaculos": [
+            pygame.Rect(200, 300, 40, 40),
+            pygame.Rect(600, 300, 40, 40),
+            pygame.Rect(300, 400, 40, 40),
+            pygame.Rect(100, 150, 40, 100)
+        ],
+        "tempo_limite": 20
+    },
+    4: {
+        "velocidade": 5,
+        "objetivo": "pontos_tempo",
         "valor_objetivo": 20,  # sobreviver 20s
         "obstaculos": [
             pygame.Rect(200, 300, 40, 40),
@@ -31,6 +44,7 @@ NIVEIS = {
         ],
         "tempo_limite": 20
     }
+    
 }
 
 MENU = "menu"
@@ -39,6 +53,9 @@ LEVEL_UP = "level_up"
 GAME_OVER = "game_over"
 
 PONTOS_PARA_PROX_NIVEL = 5
+
+tempo_limite = None
+
 
 estado = JOGANDO
 nivel = 1
@@ -133,9 +150,11 @@ def iniciar_nivel(nivel):
     global velocidade, objetivo, valor_objetivo, obstaculos, tempo_inicio
     global x_cobra, y_cobra, lista_cobra, comprimento_inicial
     global x_controle, y_controle
+    global tempo_limite
 
     config = NIVEIS[nivel]
 
+    tempo_limite = config["tempo_limite"]
     velocidade = config["velocidade"]
     objetivo = config["objetivo"]
     valor_objetivo = config["valor_objetivo"]
@@ -155,14 +174,22 @@ def iniciar_nivel(nivel):
 def verificar_objetivo():
     global estado, nivel
 
+    tempo_passado = (pygame.time.get_ticks() - tempo_inicio) // 1000
+
     if objetivo == "pontos":
         if pontos >= valor_objetivo:
             estado = LEVEL_UP
 
     elif objetivo == "tempo":
-        tempo_passado = (pygame.time.get_ticks() - tempo_inicio) // 1000
         if tempo_passado >= valor_objetivo:
             estado = LEVEL_UP
+
+    elif objetivo == "pontos_tempo":
+        if pontos >= valor_objetivo:
+            estado = LEVEL_UP
+        elif tempo_passado >= tempo_limite:
+            estado = GAME_OVER
+        
 
 #obstaculo por nivel
 def desenhar_obstaculos():
@@ -186,9 +213,11 @@ while True:
         texto_pontos = font.render(f"Pontos: {pontos}", True, (255, 255, 255))
         tela.blit(texto_pontos, (420, 40))
 
-        if objetivo == "tempo":
+        if objetivo in ("tempo", "pontos_tempo"):
             tempo_passado = (pygame.time.get_ticks() - tempo_inicio) // 1000
-            texto_tempo = font.render(f"Tempo: {tempo_passado}s", True, (255, 255, 255))
+            tempo_restante = tempo_limite - tempo_passado if tempo_limite else tempo_passado
+
+            texto_tempo = font.render(f"Tempo: {tempo_restante}s", True, (255, 255, 255))
             tela.blit(texto_tempo, (40, 40))
 
     #bloco de eventos
@@ -275,14 +304,22 @@ while True:
 
 
     # Teleporte nas bordas
-    if x_cobra >= largura:
+    '''if x_cobra >= largura:
         x_cobra = 0
     elif x_cobra <= 0:
         x_cobra = largura
     elif y_cobra >= altura:
         y_cobra = 10
     elif y_cobra < 10:
-        y_cobra = altura
+        y_cobra = altura'''
+    
+    #morte nas bordas
+    if x_cobra > largura or x_cobra < 0:
+        tela_game_over()
+        estado = GAME_OVER
+    elif y_cobra > altura or y_cobra < 10:
+        tela_game_over()
+        estado = GAME_OVER
 
     if estado == LEVEL_UP:
         tela_level_up(nivel)
