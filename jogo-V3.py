@@ -5,6 +5,12 @@ from random import randint
 
 pygame.init()
 
+#musica
+pygame.mixer.music.set_volume(0.05)
+pygame.mixer.music.load("musica_jogo.mp3")
+pygame.mixer.music.play(-1)
+
+m_colisao = pygame.mixer.Sound("musica_da_comida.wav")
 #CONFIGURAÇÕES
 
 NIVEIS = {
@@ -100,6 +106,7 @@ def tela_level_up(n):
     instrucao = pygame.font.SysFont("arial", 26).render("Pressione ENTER", True, (255,255,255))
     tela.blit(texto, (largura//2 - texto.get_width()//2, 260))
     tela.blit(instrucao, (largura//2 - instrucao.get_width()//2, 330))
+    pygame.mixer.music.pause()
 
 def iniciar_nivel(n):
     global velocidade, objetivo, valor_objetivo, obstaculos, tempo_inicio
@@ -124,6 +131,7 @@ def iniciar_nivel(n):
 
     x_controle = velocidade
     y_controle = 0
+    pygame.mixer.music.play(-1)
 
 def verificar_objetivo():
     global estado
@@ -205,6 +213,7 @@ while True:
             x_maca = randint(40, 960)
             y_maca = randint(40, 660)
             pontos += 1
+            m_colisao.play()
             comprimento_inicial += 5
 
         if desenhar_obstaculos(cobra):
