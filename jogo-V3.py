@@ -17,8 +17,17 @@ NIVEIS = {
     1: {
         "velocidade": 5,
         "objetivo": "pontos",
-        "valor_objetivo": 2,
-        "obstaculos": [],
+        "valor_objetivo": 5,
+        "obstaculos": [
+            pygame.Rect(300, 200, 50, 50),
+            pygame.Rect(30, 300, 70, 200),
+            pygame.Rect(500, 200, 50, 50),
+            pygame.Rect(700, 200, 50, 50),
+            pygame.Rect(300, 500, 50, 50),
+            pygame.Rect(30, 500, 70, 200),
+            pygame.Rect(500, 500, 50, 50),
+            pygame.Rect(700, 500, 50, 50)
+        ],
         "tempo_limite": None
     },
     2: {
@@ -46,7 +55,7 @@ NIVEIS = {
             pygame.Rect(200, 300, 40, 40),
             pygame.Rect(600, 300, 40, 40)
         ],
-        "tempo_limite": 10
+        "tempo_limite": 20
     }
 }
 
