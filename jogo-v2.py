@@ -98,6 +98,8 @@ def iniciar_nivel(nivel):
         velocidade = 8
     elif nivel == 3:
         velocidade = 11
+    else:
+        nivel = 1
 
 # Loop principal
 while True:
