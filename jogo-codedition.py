@@ -13,18 +13,16 @@ pygame.mixer.music.play(-1)
 m_colisao = pygame.mixer.Sound("musica_da_comida.wav")
 #CONFIGURAÇÕES
 
-match = {
+NIVEIS = {
     1: {
         "velocidade": 5,
         "objetivo": "pontos",
         "valor_objetivo": 5,
         "obstaculos": [
             pygame.Rect(300, 200, 50, 50),
-            pygame.Rect(30, 300, 70, 200),
             pygame.Rect(500, 200, 50, 50),
             pygame.Rect(700, 200, 50, 50),
             pygame.Rect(300, 500, 50, 50),
-            pygame.Rect(30, 500, 70, 200),
             pygame.Rect(500, 500, 50, 50),
             pygame.Rect(700, 500, 50, 50)
         ],
@@ -34,7 +32,9 @@ match = {
         "velocidade": 7,
         "objetivo": "pontos",
         "valor_objetivo": 3,
-        "obstaculos": [pygame.Rect(300, 200, 40, 40)],
+        "obstaculos": [pygame.Rect(300, 500, 50, 50),
+            pygame.Rect(500, 500, 50, 50),
+            pygame.Rect(700, 500, 50, 50)],
         "tempo_limite": None
     },
     3: {
@@ -74,7 +74,7 @@ pygame.display.set_caption("Jogo da Cobra")
 relogio = pygame.time.Clock()
 font = pygame.font.SysFont("gabriola", 36, True)
 
-estado = JOGANDO
+estado = MENU
 nivel = 1
 
 x_cobra = largura // 2
@@ -98,9 +98,19 @@ tempo_inicio = 0
 
 # ================= FUNÇÕES =================
 
+def tela_menu():
+    tela.fill((0, 0, 0))
+    
+    titulo = pygame.font.SysFont("arial", 60, True).render("JOGO DA COBRA", True, (0,255,0))
+    jogar = pygame.font.SysFont("arial", 30).render("Pressione ENTER para jogar", True, (255,255,255))
+    
+    tela.blit(titulo, (largura//2 - titulo.get_width()//2, 200))
+    tela.blit(jogar, (largura//2 - jogar.get_width()//2, 350))
+
 def aumenta_cobra(lista):
     for x, y in lista[:-1]:
         pygame.draw.circle(tela, (0, 200, 100), (x, y), 12)
+
 
 def tela_game_over():
     tela.fill((120, 0, 0))
@@ -108,6 +118,7 @@ def tela_game_over():
     instrucao = pygame.font.SysFont("arial", 26).render("Pressione R para reiniciar", True, (255,255,255))
     tela.blit(texto, (largura//2 - texto.get_width()//2, 260))
     tela.blit(instrucao, (largura//2 - instrucao.get_width()//2, 330))
+    pygame.mixer.music.pause()
 
 def tela_level_up(n):
     tela.fill((0,0,0))
@@ -177,6 +188,7 @@ while True:
     relogio.tick(40)
     tela.fill((0,0,0))
 
+    #EVENTOS
     for event in pygame.event.get():
         if event.type == QUIT:
             pygame.quit()
@@ -191,12 +203,20 @@ while True:
                 y_controle = -velocidade; x_controle = 0
             elif event.key == K_s and y_controle != -velocidade:
                 y_controle = velocidade; x_controle = 0
+        
+        #inicia o jogo no menu
+        if estado == MENU and event.type == KEYDOWN:
+            if event.key == K_RETURN:
+                estado = JOGANDO
+                iniciar_nivel(nivel)
 
+        #reinicia o jogo para o nivel 1
         if estado == GAME_OVER and event.type == KEYDOWN and event.key == K_r:
             nivel = 1
             estado = JOGANDO
             iniciar_nivel(nivel)
 
+        #avança para o proximo level
         if estado == LEVEL_UP and event.type == KEYDOWN and event.key == K_RETURN:
             nivel += 1
             if nivel in NIVEIS:
@@ -218,6 +238,7 @@ while True:
         cobra = pygame.draw.circle(tela, (50,100,144), (x_cobra, y_cobra), 13)
         maca = pygame.draw.circle(tela, (255,0,0), (x_maca, y_maca), 10)
 
+        #Colisão com a maçã
         if cobra.colliderect(maca):
             x_maca = randint(40, 960)
             y_maca = randint(40, 660)
@@ -231,6 +252,7 @@ while True:
         if lista_cobra.count([x_cobra, y_cobra]) > 1:
             estado = GAME_OVER
 
+        # cobra morre se colidir com a parede
         if x_cobra < 0 or x_cobra > largura or y_cobra < 0 or y_cobra > altura:
             estado = GAME_OVER
 
@@ -248,7 +270,9 @@ while True:
                 font.render(f"Objetivo: {valor_objetivo} pontos em {tempo_limite}s", True, (255,255,0)),
                 (300,80)
             )
-
+    elif estado == MENU:
+        tela_menu()
+        
     elif estado == GAME_OVER:
         tela_game_over()
 
